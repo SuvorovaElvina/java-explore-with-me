@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.StatService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -15,7 +16,8 @@ public class StatController {
     private final StatService service;
 
     @PostMapping("/hit")
-    public HitDto createStat(@RequestBody HitDto dto) {
+    public HitDto createStat(@RequestBody @Valid HitDto dto) {
+        log.info("Обновление статистики: сохранение {}", dto);
         return service.create(dto);
     }
 
@@ -24,6 +26,8 @@ public class StatController {
                                    @RequestParam("end") String endStr,
                                    @RequestParam(required = false) List<String> uris,
                                    @RequestParam(defaultValue = "false", required = false) Boolean unique) {
+        log.info("Получение статистики с параметрами: start {}, end {}, uris {}, unique {}",
+                startStr, endStr, uris, unique);
         return service.getStatus(startStr, endStr, uris, unique);
     }
 }
