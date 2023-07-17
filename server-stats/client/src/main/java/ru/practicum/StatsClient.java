@@ -63,7 +63,7 @@ public class StatsClient extends BaseClient {
         return get("/stats?start={start}&end={end}&unique={unique}");
     }
 
-    public ResponseEntity<Object> createUser(HttpServletRequest request) {
+    public ResponseEntity<Object> createHit(HttpServletRequest request) {
         return post("/hit", request);
     }
 }
