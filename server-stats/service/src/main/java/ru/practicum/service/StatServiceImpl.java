@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
 import ru.practicum.NewHitDto;
 import ru.practicum.StatsDto;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.model.Hit;
 import ru.practicum.model.HitMapper;
 import ru.practicum.model.Stats;
 import ru.practicum.repository.StatRepository;
 
-import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,7 +34,7 @@ public class StatServiceImpl implements StatService {
         LocalDateTime start = LocalDateTime.parse(startStr, formatter);
         LocalDateTime end = LocalDateTime.parse(endStr, formatter);
         if (start.isEqual(end) || start.isAfter(end)) {
-            throw new ValidationException();
+            throw new ValidationException("Начало не должно быть позже конца и время не должно совпадать.");
         }
         if (uris != null) {
             if (unique) {
