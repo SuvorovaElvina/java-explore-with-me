@@ -56,7 +56,7 @@ public class ErrorHandlerController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handlerDataIntegrityViolationException(final DataIntegrityViolationException e){
+    public ApiError handlerDataIntegrityViolationException(final DataIntegrityViolationException e) {
         log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
         return ApiError.builder()
                 .timestamp(LocalDateTime.now())
@@ -68,7 +68,7 @@ public class ErrorHandlerController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handlerConflictException(final ConflictException e){
+    public ApiError handlerConflictException(final ConflictException e) {
         log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
         return ApiError.builder()
                 .timestamp(LocalDateTime.now())

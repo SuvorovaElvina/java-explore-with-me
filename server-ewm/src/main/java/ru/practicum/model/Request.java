@@ -3,7 +3,6 @@ package ru.practicum.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.enums.State;
 import ru.practicum.enums.Status;
 
 import javax.persistence.*;

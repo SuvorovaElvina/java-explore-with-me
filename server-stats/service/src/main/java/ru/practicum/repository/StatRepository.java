@@ -30,4 +30,9 @@ public interface StatRepository extends JpaRepository<Hit, Long> {
             "where timestamp >= ?1 and timestamp <= ?2 " +
             "group by app, uri order by hits desc")
     List<Stats> findStatsWithoutUris(LocalDateTime start, LocalDateTime end);
+
+    @Query("select new ru.practicum.model.Stats(app, uri, count(distinct uri) as hits) from Hit " +
+            "where uri = ?1 " +
+            "group by app, uri order by hits")
+    Stats findStatsUrisAndUnique(String uris);
 }

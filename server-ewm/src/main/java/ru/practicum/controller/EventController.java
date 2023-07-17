@@ -10,6 +10,7 @@ import ru.practicum.dto.NewEventDto;
 import ru.practicum.dto.UpdateEventDto;
 import ru.practicum.service.EventService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -58,17 +59,22 @@ public class EventController {
                                     @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                     @RequestParam(name = "sort", required = false) String sortStr,
                                     @RequestParam(defaultValue = "0") Integer from,
-                                    @RequestParam(defaultValue = "10") Integer size) {
+                                    @RequestParam(defaultValue = "10") Integer size,
+                                    HttpServletRequest request) {
         log.debug("Контроллер - запрос на публичное получение: text = {}, paid = {}, categories = {}, rangeStart = {}, " +
-                "rangeEnd = {}, onlyAvailable = {}, sort = {}, from = {}, size = {}", text, paid, catsId, startStr,
+                        "rangeEnd = {}, onlyAvailable = {}, sort = {}, from = {}, size = {}", text, paid, catsId, startStr,
                 endStr, onlyAvailable, sortStr, from, size);
-        return service.getAllPublic(text, paid, catsId, startStr, endStr, onlyAvailable, sortStr, from, size);
+        log.info("client ip: {}", request.getRemoteAddr());
+        log.info("endpoint path: {}", request.getRequestURI());
+        return service.getAllPublic(text, paid, catsId, startStr, endStr, onlyAvailable, sortStr, from, size, request);
     }
 
     @GetMapping("/events/{id}")
-    public EventDto getEvent(@Positive @PathVariable Long id) {
+    public EventDto getEvent(@Positive @PathVariable Long id, HttpServletRequest request) {
         log.debug("Контроллер - запрос на публичное получение: {}", id);
-        return service.getPublicById(id);
+        log.info("client ip: {}", request.getRemoteAddr());
+        log.info("endpoint path: {}", request.getRequestURI());
+        return service.getPublicById(id, request);
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")

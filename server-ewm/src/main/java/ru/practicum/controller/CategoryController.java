@@ -28,7 +28,7 @@ public class CategoryController {
 
     @GetMapping("/categories")
     public List<CategoryDto> getCategories(@RequestParam(defaultValue = "0") Integer from,
-                                  @RequestParam(defaultValue = "10") Integer size) {
+                                           @RequestParam(defaultValue = "10") Integer size) {
         log.debug("Контроллер - запрос на получение: from = {}, size = {}", from, size);
         return service.getAll(from, size);
     }

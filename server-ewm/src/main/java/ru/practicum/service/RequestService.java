@@ -3,7 +3,6 @@ package ru.practicum.service;
 import ru.practicum.dto.RequestDto;
 import ru.practicum.dto.UpdateRequestDtoRequest;
 import ru.practicum.dto.UpdateRequestDtoResult;
-import ru.practicum.model.Request;
 
 import java.util.List;
 

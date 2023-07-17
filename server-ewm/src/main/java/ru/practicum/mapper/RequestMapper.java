@@ -6,14 +6,7 @@ import ru.practicum.model.Request;
 
 @Component
 public class RequestMapper {
-    /*public Request toRequest(RequestDto requestDto) {
-        return Request.builder()
-                .created(requestDto.getCreated())
-                .status(requestDto.getStatus())
-                .build();
-    }*/
-
-    public RequestDto toRequestDto(Request request){
+    public RequestDto toRequestDto(Request request) {
         return RequestDto.builder()
                 .requester(request.getRequester().getId())
                 .created(request.getCreated())

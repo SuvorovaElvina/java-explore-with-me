@@ -3,11 +3,12 @@ package ru.practicum.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.HitDto;
-import ru.practicum.repository.StatRepository;
+import ru.practicum.NewHitDto;
 import ru.practicum.StatsDto;
 import ru.practicum.model.Hit;
 import ru.practicum.model.HitMapper;
 import ru.practicum.model.Stats;
+import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,16 +22,16 @@ public class StatServiceImpl implements StatService {
     private final HitMapper mapper;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public HitDto create(HitDto dto) {
+    public HitDto create(NewHitDto dto) {
         Hit hit = repository.save(mapper.toHit(dto));
         return mapper.toHitDto(hit);
     }
 
     @Override
     public List<StatsDto> getStatus(String startStr, String endStr, List<String> uris, Boolean unique) {
+        List<Stats> hits;
         LocalDateTime start = LocalDateTime.parse(startStr, formatter);
         LocalDateTime end = LocalDateTime.parse(endStr, formatter);
-        List<Stats> hits;
         if (uris != null) {
             if (unique) {
                 hits = repository.findStats(uris, start, end);
@@ -45,5 +46,10 @@ public class StatServiceImpl implements StatService {
             }
         }
         return hits.stream().map(mapper::toStatsDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public Long getViews(String uris) {
+        return repository.findStatsUrisAndUnique(uris).getHits();
     }
 }

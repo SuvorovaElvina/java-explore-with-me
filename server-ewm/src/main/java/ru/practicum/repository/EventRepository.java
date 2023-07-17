@@ -14,16 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends EventCustomRepository, JpaRepository<Event, Long> {
-    Page<Event> findByInitiatorInAndStateInAndCategoryInAndEventDateAfterAndEventDateBefore(List<User> users,
-       List<State> states, List<Category> catsId, LocalDateTime start, LocalDateTime end, Pageable pageable);
-
     Page<Event> findByInitiatorId(Long userId, Pageable pageable);
 
     Optional<Event> findByIdAndStateIn(Long id, List<State> state);
-
-    @Query("select e from Event e " +
-            "where (upper(e.annotation) like upper(concat('%', ?1, '%')) " +
-            "or upper(e.description) like upper(concat('%', ?1, '%'))) " +
-            "and e.category in (?2) and e.eventDate > ?3 and e.eventDate < ?4 and e.state = 'PUBLISHED'")
-    Page<Event> searchPublicByAll(String text, List<Category> catsId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 }

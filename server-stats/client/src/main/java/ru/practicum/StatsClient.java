@@ -1,6 +1,7 @@
 package ru.practicum;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -14,8 +15,9 @@ import java.util.Map;
 
 @Service
 public class StatsClient extends BaseClient {
+
     @Autowired
-    public StatsClient(/*@Value("${stats-server.url}")*/ String serverUrl, RestTemplateBuilder builder) {
+    public StatsClient(@Value("${client.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
@@ -32,17 +34,17 @@ public class StatsClient extends BaseClient {
                 "unique", unique,
                 "uri", uris
         );
-        return get("/stats?start={start}&end={end}&uri={uri}&unique={unique}");
+        return get("/stats?start={start}&end={end}&uris={uri}&unique={unique}", parameters);
     }
 
     public ResponseEntity<Object> getStatsWithoutUnique(LocalDateTime start, LocalDateTime end,
-                                           List<String> uris) {
+                                                        List<String> uris) {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,
                 "uri", uris
         );
-        return get("/stats?start={start}&end={end}&uri={uri}");
+        return get("/stats?start={start}&end={end}&uris={uri}", parameters);
     }
 
     public ResponseEntity<Object> getStatsWithoutUriAndUnique(LocalDateTime start, LocalDateTime end) {
@@ -50,20 +52,28 @@ public class StatsClient extends BaseClient {
                 "start", start,
                 "end", end
         );
-        return get("/stats?start={start}&end={end}");
+        return get("/stats?start={start}&end={end}", parameters);
     }
 
     public ResponseEntity<Object> getStatsWithoutUri(LocalDateTime start, LocalDateTime end,
-                                           boolean unique) {
+                                                     boolean unique) {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,
                 "unique", unique
         );
-        return get("/stats?start={start}&end={end}&unique={unique}");
+        return get("/stats?start={start}&end={end}&unique={unique}", parameters);
     }
 
-    public ResponseEntity<Object> createHit(HttpServletRequest request) {
-        return post("/hit", request);
+    public ResponseEntity<Long> getStatsUnique(String uri) {
+        return get("/stats/views?uris=" + uri + "&unique=true");
+    }
+
+    public ResponseEntity<HitDto> createHit(HttpServletRequest request) {
+        NewHitDto hitDto = NewHitDto.builder()
+                .ip(request.getRemoteAddr())
+                .uri(request.getRequestURI())
+                .build();
+        return post("/hit", hitDto);
     }
 }

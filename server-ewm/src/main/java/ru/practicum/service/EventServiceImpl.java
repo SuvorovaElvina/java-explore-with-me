@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.StatsClient;
 import ru.practicum.dto.EventDto;
 import ru.practicum.dto.EventShortDto;
 import ru.practicum.dto.NewEventDto;
@@ -22,6 +23,7 @@ import ru.practicum.model.Event;
 import ru.practicum.model.User;
 import ru.practicum.repository.EventRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -37,15 +39,13 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
+    private final StatsClient client;
 
     @Override
     public EventDto create(NewEventDto newEventDto, Long userId) {
         Event event = mapper.toEvent(newEventDto);
         event.setInitiator(userService.getUser(userId));
         event.setCategory(categoryService.getCategory(newEventDto.getCategory()));
-        event.setCreatedOn(LocalDateTime.now());
-        event.setState(State.PENDING);
-        event.setConfirmedRequests(0);
         event = repository.save(event);
 
         return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()),
@@ -106,7 +106,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventDto> getAllPublic(String text, Boolean paid, List<Long> catsId, String startStr, String endStr,
-                                       boolean onlyAvailable, String sortStr, int from, int size) {
+                                       boolean onlyAvailable, String sortStr, int from, int size, HttpServletRequest request) {
         List<Event> events = List.of();
         int pageNumber = (int) Math.ceil((double) from / size);
         if (text == null || text.isBlank() && catsId == null && paid != null && startStr != null && endStr != null) {
@@ -145,13 +145,21 @@ public class EventServiceImpl implements EventService {
             events = repository.findAllEventsForUserBy(text, paid, categories, start, end, onlyAvailable,
                     sort, PageRequest.of(pageNumber, size));
         }
+        client.createHit(request);
+        events = events.stream()
+                .peek(event -> event.setViews(client.getStatsUnique(request.getRequestURI()).getBody()))
+                .collect(Collectors.toList());
+        repository.saveAll(events);
         return toEventDtoList(events);
     }
 
     @Override
-    public EventDto getPublicById(Long id) {
+    public EventDto getPublicById(Long id, HttpServletRequest request) {
         Event event = repository.findByIdAndStateIn(id, List.of(State.PUBLISHED))
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
+        client.createHit(request);
+        event.setViews(client.getStatsUnique(request.getRequestURI()).getBody());
+        saveEvent(event);
         return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()), categoryMapper.toCategoryDto(event.getCategory()));
     }
 

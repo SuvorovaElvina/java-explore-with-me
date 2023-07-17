@@ -2,16 +2,19 @@ package ru.practicum.model;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.HitDto;
+import ru.practicum.NewHitDto;
 import ru.practicum.StatsDto;
+
+import java.time.LocalDateTime;
 
 @Component
 public class HitMapper {
-    public Hit toHit(HitDto dto) {
+    public Hit toHit(NewHitDto hitDto) {
         return Hit.builder()
-                .ip(dto.getIp())
-                .app(dto.getApp())
-                .uri(dto.getUri())
-                .timestamp(dto.getTimestamp())
+                .ip(hitDto.getIp())
+                .app("ewm-service")
+                .uri(hitDto.getUri())
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 

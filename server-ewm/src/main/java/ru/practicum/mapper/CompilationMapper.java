@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 public class CompilationMapper {
-    public Compilation toCompilation(NewCompilationDto compilationDto){
+    public Compilation toCompilation(NewCompilationDto compilationDto) {
         return Compilation.builder()
                 .title(compilationDto.getTitle())
                 .pinned(compilationDto.getPinned())

@@ -1,9 +1,12 @@
 package ru.practicum.service;
 
-import org.springframework.web.bind.annotation.RequestParam;
-import ru.practicum.dto.*;
+import ru.practicum.dto.EventDto;
+import ru.practicum.dto.EventShortDto;
+import ru.practicum.dto.NewEventDto;
+import ru.practicum.dto.UpdateEventDto;
 import ru.practicum.model.Event;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface EventService {
@@ -16,9 +19,9 @@ public interface EventService {
     List<EventDto> getAllByUser(Long userId, int from, int size);
 
     List<EventDto> getAllPublic(String text, Boolean paid, List<Long> catsId, String startStr, String endStr,
-                                boolean onlyAvailable, String sortStr, int from, int size);
+                                boolean onlyAvailable, String sortStr, int from, int size, HttpServletRequest request);
 
-    EventDto getPublicById(Long id);
+    EventDto getPublicById(Long id, HttpServletRequest request);
 
     EventDto getForUserById(Long userId, Long eventId);
 

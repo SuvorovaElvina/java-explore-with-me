@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.RequestDto;
 import ru.practicum.dto.UpdateRequestDtoRequest;
 import ru.practicum.dto.UpdateRequestDtoResult;
-import ru.practicum.model.Request;
 import ru.practicum.service.RequestService;
 
 import javax.validation.Valid;
