@@ -10,6 +10,7 @@ import ru.practicum.model.HitMapper;
 import ru.practicum.model.Stats;
 import ru.practicum.repository.StatRepository;
 
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -32,6 +33,9 @@ public class StatServiceImpl implements StatService {
         List<Stats> hits;
         LocalDateTime start = LocalDateTime.parse(startStr, formatter);
         LocalDateTime end = LocalDateTime.parse(endStr, formatter);
+        if (start.isEqual(end) || start.isAfter(end)) {
+            throw new ValidationException();
+        }
         if (uris != null) {
             if (unique) {
                 hits = repository.findStats(uris, start, end);
