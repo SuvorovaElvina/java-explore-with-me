@@ -1,7 +1,6 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -42,8 +41,6 @@ public class EventServiceImpl implements EventService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
     private final StatsClient client;
-    @Lazy
-    private final EventServiceImpl self;
 
     @Override
     @Transactional
@@ -95,7 +92,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto published(Long id, UpdateEventDto updateEventDto) {
-        Event event = self.getEventById(id);
+        Event event = getEventById(id);
         if (event.getState() != State.PENDING) {
             throw new ConflictException("Вы не можете опубликовать уже опубликованное или отклонёное событие.");
         }
@@ -168,14 +165,14 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
         client.createHit(request);
         event.setViews(client.getStatsUnique(request.getRequestURI()).getBody());
-        self.saveEvent(event);
+        saveEvent(event);
         return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()), categoryMapper.toCategoryDto(event.getCategory()));
     }
 
     @Override
     @Transactional(readOnly = true)
     public EventDto getForUserById(Long userId, Long eventId) {
-        Event event = self.getEventById(eventId);
+        Event event = getEventById(eventId);
         if (!userService.getUser(userId).getId().equals(event.getInitiator().getId())) {
             throw new ValidationException("Вы не являетесь инициатором события.");
         } else {
@@ -187,7 +184,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventDto update(Long userId, Long eventId, UpdateEventDto eventDto) {
-        Event event = self.getEventById(eventId);
+        Event event = getEventById(eventId);
         if (!userService.getUser(userId).getId().equals(event.getInitiator().getId())) {
             throw new ValidationException("Вы не являетесь инициатором события.");
         }
@@ -287,7 +284,7 @@ public class EventServiceImpl implements EventService {
             event.setRequestModeration(eventDto.getRequestModeration());
         }
 
-        return mapper.toEventDto(self.saveEvent(event),
+        return mapper.toEventDto(saveEvent(event),
                 userMapper.toUserShortDto(event.getInitiator()),
                 categoryMapper.toCategoryDto(event.getCategory()));
     }

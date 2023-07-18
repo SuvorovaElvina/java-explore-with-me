@@ -1,7 +1,6 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,6 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository repository;
     private final CategoryMapper mapper;
-    @Lazy
-    private final CategoryServiceImpl self;
 
     @Override
     @Transactional
@@ -41,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto getById(Long id) {
-        return mapper.toCategoryDto(self.getCategory(id));
+        return mapper.toCategoryDto(getCategory(id));
     }
 
     @Override
@@ -53,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto update(Long id, CategoryDto categoryDto) {
-        Category category = self.getCategory(id);
+        Category category = getCategory(id);
         category.setName(categoryDto.getName());
         return mapper.toCategoryDto(repository.save(category));
     }

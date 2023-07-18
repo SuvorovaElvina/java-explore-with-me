@@ -1,7 +1,6 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +21,6 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository repository;
     private final CompilationMapper mapper;
     private final EventService eventService;
-    @Lazy
-    private final CompilationServiceImpl self;
 
     @Override
     @Transactional
