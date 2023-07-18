@@ -1,8 +1,10 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.CompilationDto;
 import ru.practicum.dto.NewCompilationDto;
 import ru.practicum.exception.NotFoundException;
@@ -20,8 +22,11 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository repository;
     private final CompilationMapper mapper;
     private final EventService eventService;
+    @Lazy
+    private final CompilationServiceImpl self;
 
     @Override
+    @Transactional
     public CompilationDto create(NewCompilationDto newCompilationDto) {
         Compilation compilation = mapper.toCompilation(newCompilationDto);
         if (compilation.getPinned() == null) {
@@ -34,6 +39,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CompilationDto> getAll(Boolean pinned, int from, int size) {
         int pageNumber = (int) Math.ceil((double) from / size);
         if (pinned == null) {
@@ -50,6 +56,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CompilationDto getById(Long id) {
         Compilation compilation = repository.findById(id).orElseThrow(() ->
                 new NotFoundException("Данной подборки не существует"));
@@ -57,11 +64,13 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public CompilationDto update(Long id, NewCompilationDto compilationDto) {
         Compilation compilation = repository.findById(id).orElseThrow(() ->
                 new NotFoundException("Данной подборки не существует"));

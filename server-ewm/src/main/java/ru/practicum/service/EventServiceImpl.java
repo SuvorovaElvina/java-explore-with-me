@@ -1,9 +1,11 @@
 package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.EventDto;
 import ru.practicum.dto.EventShortDto;
@@ -40,8 +42,11 @@ public class EventServiceImpl implements EventService {
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
     private final StatsClient client;
+    @Lazy
+    private final EventServiceImpl self;
 
     @Override
+    @Transactional
     public EventDto create(NewEventDto newEventDto, Long userId) {
         Event event = mapper.toEvent(newEventDto);
         event.setInitiator(userService.getUser(userId));
@@ -53,6 +58,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventDto> getAll(List<Long> usersId, List<String> statesStr, List<Long> catsId, String startStr, String endStr, int from, int size) {
         int pageNumber = (int) Math.ceil((double) from / size);
         List<Event> events;
@@ -89,7 +95,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventDto published(Long id, UpdateEventDto updateEventDto) {
-        Event event = getEventById(id);
+        Event event = self.getEventById(id);
         if (event.getState() != State.PENDING) {
             throw new ConflictException("Вы не можете опубликовать уже опубликованное или отклонёное событие.");
         }
@@ -97,6 +103,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventDto> getAllByUser(Long userId, int from, int size) {
         int pageNumber = (int) Math.ceil((double) from / size);
         List<Event> events = repository.findByInitiatorId(userId,
@@ -105,6 +112,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventDto> getAllPublic(String text, Boolean paid, List<Long> catsId, String startStr, String endStr,
                                        boolean onlyAvailable, String sortStr, int from, int size, HttpServletRequest request) {
         List<Event> events = List.of();
@@ -154,18 +162,20 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventDto getPublicById(Long id, HttpServletRequest request) {
         Event event = repository.findByIdAndStateIn(id, List.of(State.PUBLISHED))
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
         client.createHit(request);
         event.setViews(client.getStatsUnique(request.getRequestURI()).getBody());
-        saveEvent(event);
+        self.saveEvent(event);
         return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()), categoryMapper.toCategoryDto(event.getCategory()));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventDto getForUserById(Long userId, Long eventId) {
-        Event event = getEventById(eventId);
+        Event event = self.getEventById(eventId);
         if (!userService.getUser(userId).getId().equals(event.getInitiator().getId())) {
             throw new ValidationException("Вы не являетесь инициатором события.");
         } else {
@@ -175,8 +185,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventDto update(Long userId, Long eventId, UpdateEventDto eventDto) {
-        Event event = getEventById(eventId);
+        Event event = self.getEventById(eventId);
         if (!userService.getUser(userId).getId().equals(event.getInitiator().getId())) {
             throw new ValidationException("Вы не являетесь инициатором события.");
         }
@@ -187,17 +198,20 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Event getEventById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
     }
 
     @Override
+    @Transactional
     public Event saveEvent(Event event) {
         return repository.save(event);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Event> getAllEvents(List<Long> ids) {
         if (ids != null) {
             return repository.findAllById(ids);
@@ -273,7 +287,7 @@ public class EventServiceImpl implements EventService {
             event.setRequestModeration(eventDto.getRequestModeration());
         }
 
-        return mapper.toEventDto(repository.save(event),
+        return mapper.toEventDto(self.saveEvent(event),
                 userMapper.toUserShortDto(event.getInitiator()),
                 categoryMapper.toCategoryDto(event.getCategory()));
     }

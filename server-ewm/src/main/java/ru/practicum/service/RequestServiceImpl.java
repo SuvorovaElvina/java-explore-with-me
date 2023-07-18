@@ -2,6 +2,7 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.RequestDto;
 import ru.practicum.dto.UpdateRequestDtoRequest;
 import ru.practicum.dto.UpdateRequestDtoResult;
@@ -29,6 +30,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestMapper mapper;
 
     @Override
+    @Transactional
     public RequestDto createRequest(Long eventId, Long userId) {
         Event event = eventService.getEventById(eventId);
         User requester = userService.getUser(userId);
@@ -60,6 +62,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public RequestDto cancel(Long requestId, Long userId) {
         User user = userService.getUser(userId);
         Request request = repository.findById(requestId)
@@ -71,8 +74,8 @@ public class RequestServiceImpl implements RequestService {
         return mapper.toRequestDto(repository.save(request));
     }
 
-    //проверка на повторное подтверждение от пользователя одного и того же
     @Override
+    @Transactional
     public UpdateRequestDtoResult update(Long eventId, Long userId, UpdateRequestDtoRequest requestDto) {
         User user = userService.getUser(userId);
         Event event = eventService.getEventById(eventId);
@@ -106,12 +109,14 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RequestDto> getByUser(Long userId) {
         User user = userService.getUser(userId);
         return repository.findByRequesterId(user.getId()).stream().map(mapper::toRequestDto).collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RequestDto> getByEvent(Long userId, Long eventId) {
         User user = userService.getUser(userId);
         Event event = eventService.getEventById(eventId);

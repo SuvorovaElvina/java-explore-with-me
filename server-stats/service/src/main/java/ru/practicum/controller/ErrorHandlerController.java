@@ -14,7 +14,6 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandlerController {
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidatedException(final ValidationException e) {
@@ -25,6 +24,18 @@ public class ErrorHandlerController {
                 .message(e.getLocalizedMessage())
                 .reason(e.getMessage())
                 .status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handlerException(final Throwable e) {
+        log.debug("Получен статус 409 Conflict {}", e.getMessage(), e);
+        return ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .errors(List.of(e.getStackTrace()))
+                .message(e.getLocalizedMessage())
+                .reason(e.getMessage())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
 

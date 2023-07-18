@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.UserDto;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.UserMapper;
@@ -20,12 +21,14 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
 
     @Override
+    @Transactional
     public UserDto create(UserDto userDto) {
         User user = mapper.toUser(userDto);
         return mapper.toUserDto(repository.save(user));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> getAllDtoById(List<Long> ids, int from, int size) {
         int pageNumber = (int) Math.ceil((double) from / size);
         if (ids != null) {
@@ -41,17 +44,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User getUser(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> getAllById(List<Long> ids) {
         if (ids != null) {
             return repository.findAllById(ids);
