@@ -49,6 +49,27 @@ public class EventMapper {
                 .build();
     }
 
+    public CommentEventDto toCommentEventDto(Event event, UserShortDto userShortDto, CategoryDto categoryDto) {
+        return CommentEventDto.builder()
+                .annotation(event.getAnnotation())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .paid(event.getPaid())
+                .participantLimit(event.getParticipantLimit())
+                .requestModeration(event.getRequestModeration())
+                .title(event.getTitle())
+                .id(event.getId())
+                .state(event.getState())
+                .createdOn(event.getCreatedOn())
+                .publishedOn(event.getPublishedOn())
+                .location(Location.builder().lat(event.getLat()).lon(event.getLon()).build())
+                .confirmedRequests(event.getConfirmedRequests())
+                .initiator(userShortDto)
+                .category(categoryDto)
+                .views(event.getViews())
+                .build();
+    }
+
     public EventShortDto toEventShortDto(Event event, UserShortDto userShortDto, CategoryDto categoryDto) {
         return EventShortDto.builder()
                 .annotation(event.getAnnotation())

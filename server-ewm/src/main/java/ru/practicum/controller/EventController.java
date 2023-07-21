@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.CommentEventDto;
 import ru.practicum.dto.EventDto;
 import ru.practicum.dto.NewEventDto;
 import ru.practicum.dto.UpdateEventDto;
@@ -70,7 +71,7 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}")
-    public EventDto getEvent(@Positive @PathVariable Long id, HttpServletRequest request) {
+    public CommentEventDto getEvent(@Positive @PathVariable Long id, HttpServletRequest request) {
         log.debug("Контроллер - запрос на публичное получение: {}", id);
         log.info("client ip: {}", request.getRemoteAddr());
         log.info("endpoint path: {}", request.getRequestURI());
@@ -78,7 +79,7 @@ public class EventController {
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")
-    public EventDto getEventByUser(@Positive @PathVariable Long userId, @Positive @PathVariable Long eventId) {
+    public CommentEventDto getEventByUser(@Positive @PathVariable Long userId, @Positive @PathVariable Long eventId) {
         log.debug("Контроллер - запрос на получение: eventId = {}, от инициатора userId {}", eventId, userId);
         return service.getForUserById(userId, eventId);
     }

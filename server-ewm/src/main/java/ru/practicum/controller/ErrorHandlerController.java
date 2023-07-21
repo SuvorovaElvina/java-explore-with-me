@@ -13,6 +13,7 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -46,6 +47,18 @@ public class ErrorHandlerController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidatedException(final MethodArgumentNotValidException e) {
+        log.debug("Получен статус 400 Bad request {}", e.getMessage(), e);
+        return ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .errors(List.of(e.getStackTrace()))
+                .message(e.getLocalizedMessage())
+                .reason(e.getMessage())
+                .status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleConstraintViolationException(final ConstraintViolationException e) {
         log.debug("Получен статус 400 Bad request {}", e.getMessage(), e);
         return ApiError.builder()
                 .timestamp(LocalDateTime.now())

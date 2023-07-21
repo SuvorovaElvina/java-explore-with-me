@@ -3,7 +3,7 @@ package ru.practicum.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import ru.practicum.enums.Sorts;
+import ru.practicum.enums.SortEvent;
 import ru.practicum.enums.State;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
@@ -47,10 +47,9 @@ public class EventCustomRepositoryImpl implements EventCustomRepository {
                 .setFirstResult(pageable.getPageNumber()).getResultList();
     }
 
-    //переделать
     @Override
     public List<Event> findAllEventsForUserBy(String text, Boolean paid, List<Category> cats, LocalDateTime start,
-                                              LocalDateTime end, boolean onlyAvailable, Sorts sort, Pageable pageable) {
+                                              LocalDateTime end, boolean onlyAvailable, SortEvent sort, Pageable pageable) {
         var cb = entityManager.getCriteriaBuilder();
         var query = cb.createQuery(Event.class);
         Root<Event> eventRoot = query.from(Event.class);
