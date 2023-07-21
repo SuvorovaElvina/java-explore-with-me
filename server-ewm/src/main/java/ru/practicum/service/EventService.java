@@ -1,8 +1,6 @@
 package ru.practicum.service;
 
-import org.springframework.data.domain.Page;
 import ru.practicum.dto.*;
-import ru.practicum.enums.SortComment;
 import ru.practicum.model.Event;
 
 import javax.servlet.http.HttpServletRequest;
