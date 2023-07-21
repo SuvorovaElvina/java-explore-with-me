@@ -10,11 +10,13 @@ import ru.practicum.dto.CommentDto;
 import ru.practicum.dto.CommentEventDto;
 import ru.practicum.dto.RequestCommentDto;
 import ru.practicum.enums.SortComment;
+import ru.practicum.enums.State;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.CommentMapper;
 import ru.practicum.model.Comment;
+import ru.practicum.model.Event;
 import ru.practicum.repository.CommentRepository;
 
 import java.time.LocalDateTime;
@@ -33,8 +35,13 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentDto create(Long eventId, Long userId, RequestCommentDto commentDto) {
-        Comment comment = mapper.toComment(commentDto, eventService.getEventById(eventId), userService.getUser(userId));
-        return mapper.toCommentDto(repository.save(comment));
+        Event event = eventService.getEventById(eventId);
+        if (event.getState() == State.PUBLISHED) {
+            Comment comment = mapper.toComment(commentDto, event, userService.getUser(userId));
+            return mapper.toCommentDto(repository.save(comment));
+        } else {
+            throw new ConflictException("Комментарий можно написать только к опубликовонным событиям");
+        }
     }
 
     @Override
