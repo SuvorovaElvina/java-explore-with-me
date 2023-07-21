@@ -15,7 +15,6 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.CommentMapper;
 import ru.practicum.model.Comment;
-import ru.practicum.model.Event;
 import ru.practicum.repository.CommentRepository;
 
 import java.time.LocalDateTime;
@@ -86,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
                         throw new ValidationException("Start не должен быть позже end или быть равным ему.");
                     } else {
                         commentDtos = repository.findByCreatedBeforeAndCreatedAfter(end, start,
-                                PageRequest.of(pageNumber, size, Sort.by("created").descending()))
+                                        PageRequest.of(pageNumber, size, Sort.by("created").descending()))
                                 .stream()
                                 .map(mapper::toCommentDto)
                                 .collect(Collectors.toList());

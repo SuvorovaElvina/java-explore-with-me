@@ -21,7 +21,6 @@ import java.util.List;
 public class CommentController {
     private final CommentService service;
 
-    //написаны тесты
     @PostMapping("/users/{userId}/comment")
     @ResponseStatus(value = HttpStatus.CREATED)
     public CommentDto createComment(@Positive @RequestParam Long eventId,
@@ -30,7 +29,6 @@ public class CommentController {
         return service.create(eventId, userId, commentDto);
     }
 
-    //написаны тесты
     @PatchMapping("/users/{userId}/comment/{comId}")
     public CommentDto updateComment(@Positive @PathVariable Long userId,
                                     @Positive @PathVariable Long comId,
@@ -38,7 +36,6 @@ public class CommentController {
         return service.update(userId, comId, commentDto);
     }
 
-    //написаны тесты
     @GetMapping("/users/{userId}/comment")
     public List<CommentEventDto> getEventByCommentAndUser(@Positive @PathVariable Long userId,
                                                           @RequestParam(defaultValue = "0") Integer from,
@@ -46,7 +43,6 @@ public class CommentController {
         return service.getCommentEventDtoByUser(userId, from, size);
     }
 
-    //
     @GetMapping("/admin/comment")
     public List<CommentDto> getAllComment(@RequestParam(name = "start", required = false) String startStr,
                                           @RequestParam(name = "end", required = false) String endStr,
@@ -56,14 +52,12 @@ public class CommentController {
         return service.getAllCommentDto(startStr, endStr, sort, from, size);
     }
 
-    //написаны тесты
     @DeleteMapping("/users/{userId}/comment")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByUser(@Positive @PathVariable Long userId, @RequestParam(required = false) List<Long> comsId) {
         service.deleteByUser(userId, comsId);
     }
 
-    //написаны тесты
     @DeleteMapping("/admin/comment")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteByAdmin(@RequestParam List<Long> comsId) {
