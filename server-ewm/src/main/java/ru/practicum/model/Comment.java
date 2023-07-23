@@ -26,7 +26,7 @@ public class Comment {
     @ToString.Exclude
     Event event;
 
-    @OneToOne
+    @ManyToOne
     @ToString.Exclude
     User author;
 
