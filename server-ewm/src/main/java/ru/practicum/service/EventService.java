@@ -1,9 +1,6 @@
 package ru.practicum.service;
 
-import ru.practicum.dto.EventDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.NewEventDto;
-import ru.practicum.dto.UpdateEventDto;
+import ru.practicum.dto.*;
 import ru.practicum.model.Event;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +18,9 @@ public interface EventService {
     List<EventDto> getAllPublic(String text, Boolean paid, List<Long> catsId, String startStr, String endStr,
                                 boolean onlyAvailable, String sortStr, int from, int size, HttpServletRequest request);
 
-    EventDto getPublicById(Long id, HttpServletRequest request);
+    CommentEventDto getPublicById(Long id, HttpServletRequest request);
 
-    EventDto getForUserById(Long userId, Long eventId);
+    CommentEventDto getForUserById(Long userId, Long eventId);
 
     EventDto update(Long userId, Long eventId, UpdateEventDto eventDto);
 
@@ -34,4 +31,6 @@ public interface EventService {
     List<Event> getAllEvents(List<Long> ids);
 
     List<EventShortDto> getShortEvent(List<Event> events);
+
+    List<CommentEventDto> getCommentEventDto(List<Long> eventsId, int page, int size);
 }

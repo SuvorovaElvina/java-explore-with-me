@@ -6,22 +6,21 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
-import ru.practicum.dto.EventDto;
-import ru.practicum.dto.EventShortDto;
-import ru.practicum.dto.NewEventDto;
-import ru.practicum.dto.UpdateEventDto;
-import ru.practicum.enums.Sorts;
+import ru.practicum.dto.*;
+import ru.practicum.enums.SortEvent;
 import ru.practicum.enums.State;
 import ru.practicum.enums.StateAction;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.CategoryMapper;
+import ru.practicum.mapper.CommentMapper;
 import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.UserMapper;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
 import ru.practicum.model.User;
+import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,17 +28,22 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository repository;
+    private final CommentRepository commentRepository;
     private final UserService userService;
     private final CategoryService categoryService;
     private final EventMapper mapper;
     private final CategoryMapper categoryMapper;
     private final UserMapper userMapper;
+    private final CommentMapper commentMapper;
     private final StatsClient client;
 
     @Override
@@ -118,7 +122,7 @@ public class EventServiceImpl implements EventService {
             if (sortStr == null) {
                 events = repository.findAll(PageRequest.of(pageNumber, size)).toList();
             } else {
-                switch (Sorts.fromString(sortStr)) {
+                switch (SortEvent.fromString(sortStr)) {
                     case VIEWS:
                         events = repository.findAll(PageRequest.of(pageNumber, size, Sort.by("views").ascending())).toList();
                         break;
@@ -131,7 +135,7 @@ public class EventServiceImpl implements EventService {
             List<Category> categories = null;
             LocalDateTime start = null;
             LocalDateTime end = null;
-            Sorts sort = null;
+            SortEvent sort = null;
             if (catsId != null) {
                 categories = categoryService.getAllById(catsId);
             }
@@ -145,7 +149,7 @@ public class EventServiceImpl implements EventService {
                 throw new ValidationException("Окончание диапозона не может быть раньше начала диапозона");
             }
             if (sortStr != null) {
-                sort = Sorts.fromString(sortStr);
+                sort = SortEvent.fromString(sortStr);
             }
             events = repository.findAllEventsForUserBy(text, paid, categories, start, end, onlyAvailable,
                     sort, PageRequest.of(pageNumber, size));
@@ -160,24 +164,37 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public EventDto getPublicById(Long id, HttpServletRequest request) {
+    public CommentEventDto getPublicById(Long id, HttpServletRequest request) {
         Event event = repository.findByIdAndStateIn(id, List.of(State.PUBLISHED))
                 .orElseThrow(() -> new NotFoundException(String.format("Категории с id %d не найдено", id)));
         client.createHit(request);
         event.setViews(client.getStatsUnique(request.getRequestURI()).getBody());
         saveEvent(event);
-        return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()), categoryMapper.toCategoryDto(event.getCategory()));
+        CommentEventDto eventDto = mapper.toCommentEventDto(event,
+                userMapper.toUserShortDto(event.getInitiator()),
+                categoryMapper.toCategoryDto(event.getCategory()));
+        eventDto.setCommentDtos(commentRepository.findByEventId(eventDto.getId())
+                .stream()
+                .map(commentMapper::toCommentDto)
+                .collect(Collectors.toList()));
+        return eventDto;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public EventDto getForUserById(Long userId, Long eventId) {
+    public CommentEventDto getForUserById(Long userId, Long eventId) {
         Event event = getEventById(eventId);
         if (!userService.getUser(userId).getId().equals(event.getInitiator().getId())) {
             throw new ValidationException("Вы не являетесь инициатором события.");
         } else {
-            return mapper.toEventDto(event, userMapper.toUserShortDto(event.getInitiator()),
+            CommentEventDto eventDto = mapper.toCommentEventDto(event,
+                    userMapper.toUserShortDto(event.getInitiator()),
                     categoryMapper.toCategoryDto(event.getCategory()));
+            eventDto.setCommentDtos(commentRepository.findByEventId(eventDto.getId())
+                    .stream()
+                    .map(commentMapper::toCommentDto)
+                    .collect(Collectors.toList()));
+            return eventDto;
         }
     }
 
@@ -224,6 +241,25 @@ public class EventServiceImpl implements EventService {
                         userMapper.toUserShortDto(event.getInitiator()),
                         categoryMapper.toCategoryDto(event.getCategory())))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CommentEventDto> getCommentEventDto(List<Long> eventsId, int page, int size) {
+        List<CommentEventDto> commentEventDtos = repository.findByIdIn(eventsId, PageRequest.of(page, size))
+                .stream()
+                .map(event -> mapper.toCommentEventDto(event,
+                        userMapper.toUserShortDto(event.getInitiator()),
+                        categoryMapper.toCategoryDto(event.getCategory())))
+                .collect(Collectors.toList());
+        Map<Long, List<CommentDto>> commentsMap = commentRepository.findByEventIdIn(eventsId)
+                .stream()
+                .filter(comment -> comment.getEvent() != null)
+                .collect(groupingBy(comment -> comment.getEvent().getId(),
+                        Collectors.mapping(commentMapper::toCommentDto, Collectors.toList())));
+        for (CommentEventDto eventDto : commentEventDtos) {
+            eventDto.setCommentDtos(commentsMap.getOrDefault(eventDto.getId(), List.of()));
+        }
+        return commentEventDtos;
     }
 
     private LocalDateTime fromString(String dateStr) {

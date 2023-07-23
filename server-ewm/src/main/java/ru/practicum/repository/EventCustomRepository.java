@@ -1,7 +1,7 @@
 package ru.practicum.repository;
 
 import org.springframework.data.domain.Pageable;
-import ru.practicum.enums.Sorts;
+import ru.practicum.enums.SortEvent;
 import ru.practicum.enums.State;
 import ru.practicum.model.Category;
 import ru.practicum.model.Event;
@@ -15,5 +15,5 @@ public interface EventCustomRepository {
                                         LocalDateTime end, Pageable pageable);
 
     List<Event> findAllEventsForUserBy(String text, Boolean paid, List<Category> catsId, LocalDateTime start,
-                                       LocalDateTime end, boolean onlyAvailable, Sorts sort, Pageable pageable);
+                                       LocalDateTime end, boolean onlyAvailable, SortEvent sort, Pageable pageable);
 }
